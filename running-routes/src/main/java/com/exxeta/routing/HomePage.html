@@ -1,0 +1,136 @@
+<html>
+    <head>
+        <title>EXXETA Runner</title>
+        <style type="text/css">
+            body { font-family:Verdana; }
+        </style>
+        <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+        <script src="http://www.openstreetmap.org/openlayers/OpenStreetMap.js"></script>
+        <script	src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=${google.maps.key}'></script>
+        <script src="http://people.iola.dk/olau/flot/jquery.js"></script>
+        <script src="http://people.iola.dk/olau/flot/jquery.flot.js"></script>
+        <script type="text/javascript">
+            var map, popup, polygonLayer, markers;
+            var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+            style_blue.strokeColor = "blue";
+            style_blue.fillColor = style_blue.strokeColor;
+            var style_lightblue = {
+                strokeColor: style_blue.strokeColor,
+                strokeOpacity: 0.5,
+                strokeWidth: 3,
+                pointRadius: 6,
+                pointerEvents: "visiblePainted"
+            };
+
+            OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
+                defaultHandlerOptions: {
+                    'single': true,
+                    'double': false,
+                    'pixelTolerance': 0,
+                    'stopSingle': false,
+                    'stopDouble': false
+                },
+
+                initialize: function(options) {
+                    this.handlerOptions = OpenLayers.Util.extend(
+                    {}, this.defaultHandlerOptions
+                );
+                    OpenLayers.Control.prototype.initialize.apply(
+                    this, arguments
+                );
+                    this.handler = new OpenLayers.Handler.Click(
+                    this, {
+                        'click': this.trigger
+                    }, this.handlerOptions
+                );
+                },
+
+                trigger: function(e) {
+                    var lonlat = map.getLonLatFromViewPortPx(e.xy).transform(map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+                    document.form.lonlat.value = lonlat.lon + "," + lonlat.lat;
+
+                    polygonLayer.destroyFeatures();
+                    markers.clearMarkers();
+                    var point = new OpenLayers.Geometry.Point(map.getLonLatFromViewPortPx(e.xy).lon, map.getLonLatFromViewPortPx(e.xy).lat);
+                    var pointFeature = new OpenLayers.Feature.Vector(point, null, style_blue);
+                    polygonLayer.addFeatures([pointFeature]);
+                    if (typeof(popup) != "undefined") {
+                        popup.destroy();
+                    }
+                    popup = new OpenLayers.Popup("Input", map.getLonLatFromViewPortPx(e.xy), new OpenLayers.Size(180,70));
+                    popup.setOpacity(.8);
+                    popup.setContentHTML("<form name=\"popup_form\">Distance: <input name=\"popup_distance\" style=\"text-align:right;\" type=\"text\"  size=\"2\" maxlength=\"2\" value=\"10\" />km<br><input type=\"button\" onclick=\"calculate();\" value=\"Calculate\"/></form>");
+                    map.addPopup(popup);
+                    document.popup_form.popup_distance.select();
+                }
+            });
+
+            function calculate() {
+                document.form.distance.value = document.popup_form.popup_distance.value;
+                popup.setContentHTML("<img src=\"images/spinner.gif\" style=\"height:60%, width:60%\"/>Calculating");
+                document.form.calc.click();
+            }
+
+            function getURL(bounds) {
+                var res = this.map.getResolution();
+                var x = Math.round ((bounds.left - this.maxExtent.left) / (res * this.tileSize.w));
+                var y = Math.round ((this.maxExtent.top - bounds.top) / (res * this.tileSize.h));
+                var z = this.map.getZoom();
+
+                var path = z + "/row" + y + "/" + z + "_" + x + "-" + y + ".jpg";
+                var url = this.url;
+                if (url instanceof Array) {
+                    url = this.selectUrl(path, url);
+                }
+                return url + path;
+            }
+
+            function init(){
+                var mapOptions = {
+                    maxResolution: 156543.03390625,
+                    numZoomLevels: 31,
+                    projection: new OpenLayers.Projection('EPSG:900913'),
+                    maxExtent: new OpenLayers.Bounds(-2.003750834E7,-2.003750834E7,2.003750834E7,2.003750834E7)
+                };
+                map = new OpenLayers.Map('map', mapOptions);
+
+                var layer_mapnik = new OpenLayers.Layer.OSM.Mapnik("Mapnik");
+                var layer_osmarender = new OpenLayers.Layer.OSM.Osmarender("Osmarender");
+
+                var gphy = new OpenLayers.Layer.Google("Google Physical", {type: G_PHYSICAL_MAP, 'sphericalMercator': true});
+                var gmap = new OpenLayers.Layer.Google("Google Streets", {'sphericalMercator': true});
+                var ghyb = new OpenLayers.Layer.Google("Google Hybrid", {type: G_HYBRID_MAP, 'sphericalMercator': true});
+                var gsat = new OpenLayers.Layer.Google("Google Satellite", {type: G_SATELLITE_MAP, 'sphericalMercator': true});
+                polygonLayer = new OpenLayers.Layer.Vector("Route");
+
+                var layer_wms = new OpenLayers.Layer.WMS("EXXETA Map", "${geoserver.url}", {layers: 'exxeta', format: 'image/png', transparent: 'true'}, {isBaseLayer: false, visibility: false, opacity: 0.6});
+
+                map.addLayers([layer_mapnik, layer_osmarender, gphy, gmap, ghyb, gsat, polygonLayer, layer_wms]);
+
+                markers = new OpenLayers.Layer.Markers( "Markers" );
+                map.addLayer(markers);
+
+                map.addControl(new OpenLayers.Control.LayerSwitcher());
+                map.addControl(new OpenLayers.Control.MousePosition());
+                map.addControl(new OpenLayers.Control.ScaleLine());
+
+                var lonLat = new OpenLayers.LonLat(8.413013, 49.035257).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+                map.setCenter(lonLat, 15);
+
+                var click = new OpenLayers.Control.Click();
+                map.addControl(click);
+                click.activate();
+            }
+        </script>
+    </head>
+    <body onload="init()">
+        <h1 id="title">EXXETA Runner</h1>
+        <p>This is a demo of the EXXETA Runner, a program which enables the calculation of running routes. In order to calculate a route you just need to click in the map for the starting point, enter the distance and press Calculate. <i>This demo version is restricted to Baden-Württemberg and doesn't allow distances equal or longer than 20km.</i> - For further information just send an e-mail to daniel.weisser@exxeta.com or steffen.bach@exxeta.com.</p>
+        <form style="display:none;" wicket:id="form" name="form">
+            LonLat: <input type="text" readonly="true" name="lonlat" wicket:id="lonlat"/>
+            Distance: <input type="text" wicket:id="distance"/>
+            <input type="submit" value="Calculate" wicket:id="calc" name="calc"/>
+        </form>
+        <div style="height:85%" id="map"></div>
+    </body>
+</html>
