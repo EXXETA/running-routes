@@ -1,0 +1,144 @@
+Installation of Geoserver
+
+  This document describes the installation process for the Geoserver. The Geoserver serves the geodata in the PostgreSQL as maps and thus the application can display the same data that is used for calculating routes. The process is described for Ubuntu. For other systems the installation must be adjusted accordingly.
+
+  For the installation te newest version 1.7.5 was used.
+
+* Download and install Geoserver
+
+  The software can be downloaded from {{http://geoserver.org/display/GEOS/Welcome}}. The downloaded war is then deployed into the existing Tomcat instance.
+
+* Configuration of the Geoserver
+
+  TheGeoserver will be configured with the administration interface that is available via web browser {{http://testubuntu:8080/geoserver/}}. The important changes will be made in the section <<Welcome | Config | Data>>.
+
+  Create New Namespace
+
+---------------------------------------
+Prefix: ex
+URI: http://testubuntu/ex
+---------------------------------------
+
+  Create New Feature Data Set
+
+---------------------------------------
+Feature Data Set Description: Postgis
+Feature Data Set ID: exxeta_osm
+
+Namespace: ex
+host: localhost
+port: 5432
+schema: public
+database: gis
+user: postgres
+passwd: postgres
+---------------------------------------
+
+  Create a new FeatureType from an available DataStore
+
+---------------------------------------
+Name: planet_osm_line
+Style: simple-roads
+SRS: 900913
+---------------------------------------
+
+  Add Web Map Server Contents (<<Welcome | Config | WMS | Contents>>)
+
+---------------------------------------
+Layer-group Name: exxeta
+Base Map Layers: planet_osm_line
+---------------------------------------
+
+* web.xml configuration
+
+  For the correct usage of the GeoServer it is necessary to adapt the web.xml according to {{http://docs.geoserver.org/1.7.x/user/geowebcache/setup.html}}
+
+* Test the map server
+
+  After the installation the map can be shown in the browser: {{http://testubuntu:8080/geoserver/wms?bbox=-180.0,-90.0,180.0,90.0&styles=&Format=application/openlayers&request=GetMap&version=1.1.1&layers=exxeta&width=800&height=375&srs=EPSG:4326}}
+
+* Style adaption
+
+   The style that is used for the feature type is described below. It shows the routing graph that is used for calculation as the same features are drawn.
+
+---------------------------------------
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc"
+  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd">
+  <NamedLayer>
+    <Name>Default Line</Name>
+    <UserStyle>
+      <Title>2 px blue line</Title>
+      <Abstract>Default line style, 2 pixel wide blue</Abstract>
+
+      <FeatureTypeStyle>
+        <!--FeatureTypeName>Feature</FeatureTypeName-->
+        <Rule>
+          <Title>Blue Line</Title>
+          <Abstract>A 2 pixel wide blue line</Abstract>
+          <ogc:Filter>
+          <ogc:Or>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>residential</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>track</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>cycleway</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>footway</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>service</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>unclassified</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>living_street</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>pedestrian</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>path</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>bridleway</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>byway</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>highway</ogc:PropertyName>
+              <ogc:Literal>steps</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            </ogc:Or>
+          </ogc:Filter>
+
+          <LineSymbolizer>
+            <Stroke>
+              <CssParameter name="stroke">#0000FF</CssParameter>
+            </Stroke>
+          </LineSymbolizer>
+        </Rule>
+
+      </FeatureTypeStyle>
+    </UserStyle>
+  </NamedLayer>
+</StyledLayerDescriptor>
+---------------------------------------

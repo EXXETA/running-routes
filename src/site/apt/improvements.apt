@@ -1,0 +1,43 @@
+Necessary changes
+
+   * <Set correct starting point> <<DONE>>
+
+   * <Error handling> <<DONE>>
+
+   * <Selection of different algorithms> <<DONE>>
+
+   * Good routing algorithm (Steffen & Daniel)
+
+   * <Visual feedback that a calculation takes place (Steffen)> <<DONE>>
+
+   * <Put technical result information in popup (Steffen)> <<DONE>>
+
+   * <Result popup shouldn't overlap the route (Daniel)> <<Mit der momentanen API nicht problemlos m&ouml;glich>>
+
+   * <Zoom to route after calculation (Daniel)> <<DONE>>
+
+Possible improvements
+
+   * <Integrate satellite images> <<DONE>>
+
+   * Calculate multiple routes and allow paging
+
+   * <Show elevation profile ({{http://www.geonames.org/export/web-services.html}})> <<DONE>>
+
+   * Save routes
+
+   * Allow manual editing of routes (see Google Maps)
+
+   * Add selection criteria (routes for inline skaters, multiple bike profiles, ...)
+
+   * Show estimated duration
+
+   * <Mark kilometers on map> <<DONE>>
+
+   * Export as GPX for reuse on mobile systems
+   
+Development
+  
+   * <Use profiles (e.g. Wicket debug for local, other for ...)> <<DONE>>
+   
+   * Extract commonly used information (colors, fonts, ...)

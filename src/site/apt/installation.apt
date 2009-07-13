@@ -1,0 +1,67 @@
+Installation of the server
+
+  This document describes the installation process for the server environment of the application. The process is described for Ubuntu. For other systems the installation must be adjusted accordingly.
+
+* Install necessary software packages for Ubuntu
+
+  Install PostgreSQL database with PostGIS extension
+
+---------------------------------------
+sudo apt-get install postgresql postgis postgresql-8.3-postgis postgresql-client postgresql-contrib
+---------------------------------------
+
+  Install OpenStreetMap import tool
+
+---------------------------------------
+sudo apt-get install osm2pgsql
+---------------------------------------
+
+  Install Tomcat
+
+---------------------------------------
+sudo apt-get install tomcat6
+---------------------------------------
+
+* Configure PostgreSQL
+
+  First change the password of the standard user.
+
+---------------------------------------
+sudo -u postgres psql postgres
+ALTER USER postgres WITH ENCRYPTED PASSWORD 'postgres';
+\q
+---------------------------------------
+
+  After that create the database which will contain the map data later on.
+
+---------------------------------------
+sudo -u postgres createdb gis
+---------------------------------------
+
+  The next step is to setup the PostGIS extensions.
+
+---------------------------------------
+sudo -u postgres createlang plpgsql gis
+sudo -u postgres psql -d gis -f /usr/share/postgresql-8.3-postgis/lwpostgis.sql
+sudo -u postgres psql -d gis -f /usr/share/postgresql-8.3-postgis/spatial_ref_sys.sql
+---------------------------------------
+
+  Further information concerning the setup of the database can be found here:
+
+  * {{http://fernandoacorreia.wordpress.com/2008/10/18/installing-postgresql-on-ubuntu-810/}}
+
+  * {{http://postgis.refractions.net/support/wiki/index.php?PostgisOnUbuntu}}
+
+* Download and import the map data
+
+  The OpenStreetMap data can now be downloaded and imported. Snapshots from various regions can found at {{http://download.geofabrik.de/osm/}}. For the demo application the data of Baden Württemberg has beend used.
+
+---------------------------------------
+sudo -u postgres osm2pgsql -m -d gis baden-wuerttemberg.osm.bz2
+---------------------------------------
+
+  Further information concerning the import of OpenStreetMap data can be found at {{http://wiki.openstreetmap.org/wiki/DE:Mapnik}}
+
+* Install application
+
+  For the installation it is only necessary to deploy the created war file into the container.
