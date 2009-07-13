@@ -2,7 +2,7 @@
 <project>
     <body>
         <links>
-            <item name="Demo application" href="http://testubuntu:8080/routing/"/>
+            <item name="Demo application" href="http://testubuntu:8080/running-routes/"/>
         </links>
         <menu name="Documentation">
             <item name="Installation notes" href="installation.html"/>
