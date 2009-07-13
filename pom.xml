@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exxeta</groupId>
-    <artifactId>routing</artifactId>
+    <artifactId>running-routes</artifactId>
     <packaging>war</packaging>
     <version>0.1</version>
-    <name>Runner routing</name>
-    <description>This application is a testbed for integrating geo information into a Java web application. The results will be presented at the Entwicklertage 2009 in Karlsruhe.</description>
-    <url>http://sourceforge.net/projects/runner-routing/</url>
+    <name>Running routes</name>
+    <description>An online running route calculator based on OpenStreetMap data.</description>
+    <url>https://sourceforge.net/projects/running-routes/</url>
     <organization>
         <name>EXXETA AG</name>
         <url>http://www.exxeta.com</url>
