@@ -114,9 +114,18 @@ public class BoxRouting implements RoutingAlgorithm {
         double currentAngleDifference = Double.MAX_VALUE;
         for (Edge e : (List<Edge>) node.getEdges()) {
             double tmpAngleDifference = Math.abs(calculateAngle(node, e.getOtherNode(node)) - angle);
-            if (tmpAngleDifference < currentAngleDifference) {
+            if (tmpAngleDifference < currentAngleDifference && !e.isVisited()) {
                 currentAngleDifference = tmpAngleDifference;
                 bestEdge = e;
+            }
+        }
+        if (bestEdge == null) {
+            for (Edge e : (List<Edge>) node.getEdges()) {
+                double tmpAngleDifference = Math.abs(calculateAngle(node, e.getOtherNode(node)) - angle);
+                if (tmpAngleDifference < currentAngleDifference) {
+                    currentAngleDifference = tmpAngleDifference;
+                    bestEdge = e;
+                }
             }
         }
         return bestEdge;
