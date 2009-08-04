@@ -4,11 +4,11 @@
         <style type="text/css">
             body { font-family:Verdana; }
         </style>
-        <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
-        <script src="http://www.openstreetmap.org/openlayers/OpenStreetMap.js"></script>
-        <script	src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=${google.maps.key}'></script>
-        <script src="http://people.iola.dk/olau/flot/jquery.js"></script>
-        <script src="http://people.iola.dk/olau/flot/jquery.flot.js"></script>
+        <script type="text/javascript" src="http://www.openlayers.org/api/OpenLayers.js"></script>
+        <script type="text/javascript" src="http://www.openstreetmap.org/openlayers/OpenStreetMap.js"></script>
+        <script	type="text/javascript" src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=${google.maps.key}'></script>
+        <script type="text/javascript" src="http://people.iola.dk/olau/flot/jquery.js"></script>
+        <script type="text/javascript" src="http://people.iola.dk/olau/flot/jquery.flot.js"></script>
         <script type="text/javascript">
             var map, popup, polygonLayer, markers;
             var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
@@ -85,7 +85,22 @@
                 return url + path;
             }
 
-            function init(){
+            function foundLocation(position) {
+                var lonLat = new OpenLayers.LonLat(position.coords.longitude, position.coords.latitude).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+                var zoomLevel = 14;
+
+                if (position.coords.accuracy > 500) {
+                    zoomLevel = 11;
+                }
+                map.setCenter(lonLat, zoomLevel);
+            }
+            
+            function noLocation() {
+                var lonLat = new OpenLayers.LonLat(8.413013, 49.035257).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+                map.setCenter(lonLat, 15);
+            }
+
+            function init() {
                 var mapOptions = {
                     maxResolution: 156543.03390625,
                     numZoomLevels: 31,
@@ -114,12 +129,15 @@
                 map.addControl(new OpenLayers.Control.MousePosition());
                 map.addControl(new OpenLayers.Control.ScaleLine());
 
-                var lonLat = new OpenLayers.LonLat(8.413013, 49.035257).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-                map.setCenter(lonLat, 15);
-
                 var click = new OpenLayers.Control.Click();
                 map.addControl(click);
                 click.activate();
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
+                } else {
+                    noLocation();
+                }
             }
         </script>
     </head>
