@@ -1,0 +1,33 @@
+body {
+    color:#333333;
+    font-family:Tahoma,Arial,Verdana;
+    font-size:11px;
+}
+.menu {
+    bottom:0;
+    left:0;
+    padding:10px;
+    position:absolute;
+    top:0;
+    width:250px;
+}
+.map {
+    border-left:1px solid #999999;
+    bottom:0;
+    height:100%;
+    left:270px;
+    position:absolute;
+    right:0;
+    top:0;
+}
+.shadow {
+    background-image:url(images/bg_gray.png);
+    background-repeat:repeat-y;
+    bottom:0;
+    height:100%;
+    left:270px;
+    position:absolute;
+    top:0;
+    width:5px;
+    z-index:10000;
+}
