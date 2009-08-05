@@ -31,3 +31,11 @@ body {
     width:5px;
     z-index:10000;
 }
+input#search {
+    background-color:#EFEFEF;
+    border:1px solid #999999;
+    color:#333333;
+    font-size:1em;
+    padding:3px;
+    width:250px;
+}

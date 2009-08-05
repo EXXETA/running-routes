@@ -136,12 +136,70 @@
                     noLocation();
                 }
             }
+
+            function JSONscriptRequest(fullUrl) {
+                this.fullUrl = fullUrl;
+                this.noCacheIE = '&noCacheIE=' + (new Date()).getTime();
+                this.headLoc = document.getElementsByTagName("head").item(0);
+                this.scriptId = 'YJscriptId' + JSONscriptRequest.scriptCounter++;
+            }
+
+            JSONscriptRequest.scriptCounter = 1;
+
+            JSONscriptRequest.prototype.buildScriptTag = function () {
+                this.scriptObj = document.createElement("script");
+
+                this.scriptObj.setAttribute("type", "text/javascript");
+                this.scriptObj.setAttribute("src", this.fullUrl + this.noCacheIE);
+                this.scriptObj.setAttribute("id", this.scriptId);
+            }
+
+            JSONscriptRequest.prototype.removeScriptTag = function () {
+                this.headLoc.removeChild(this.scriptObj);
+            }
+
+            JSONscriptRequest.prototype.addScriptTag = function () {
+                this.headLoc.appendChild(this.scriptObj);
+            }
+
+            function search_focus(ob) {
+                ob.value="";
+            }
+            function center(lng, lat) {
+                var lonLat = new OpenLayers.LonLat(lng, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+                map.setCenter(lonLat, 15);
+            }
+
+            function getLocation(jData) {
+                if (jData == null) {
+                    return;
+                }
+
+                var html = '';
+                var geonames = jData.geonames;
+                for (i=0;i< geonames.length;i++) {
+                    var name = geonames[i];
+                    html = html + '<a href="javascript:center('+name.lng+','+name.lat+');">' + name.name + '</a><br>';
+                }
+                document.getElementById('resultDiv').innerHTML = html;
+            }
+
+            function search(ob) {
+                request = 'http://ws.geonames.org/searchJSON?q=' +  encodeURIComponent(ob.value)  + '&maxRows=10&style=SHORT&lang=de&country=DE&callback=getLocation';
+                aObj = new JSONscriptRequest(request);
+                aObj.buildScriptTag();
+                aObj.addScriptTag();
+            }
         </script>
     </head>
     <body onload="init()">
         <div class="menu">
             <h1>Running routes</h1>
             <p>This is a demo of running routes, a web application which enables the calculation of running routes for Germany. In order to calculate a route you just need to click in the map for the starting point, enter the distance and press Calculate. <i>This demo version doesn't allow distances equal or longer than 20km.</i> - For further information visit <a href="http://sourceforge.net/projects/running-routes/">http://sourceforge.net/projects/running-routes/</a>.</p>
+            <div class="search">
+                <input id="search" onfocus="search_focus(this)" onchange="search(this)" value="Search ..."/>
+                <div id="resultDiv"/>
+            </div>
         </div>
         <div>
             <form style="display:none;" wicket:id="form" name="form">
