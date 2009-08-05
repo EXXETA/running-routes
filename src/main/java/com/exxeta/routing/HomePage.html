@@ -2,10 +2,11 @@
     <head>
         <title>Running routes</title>
         <link href="index.css" type="text/css" rel="stylesheet">
+        <script type="text/javascript" src="js/jquery-1.3.2.min.js"></script>
+        <script type="text/javascript" src="js/search.js"></script>
         <script type="text/javascript" src="http://www.openlayers.org/api/OpenLayers.js"></script>
         <script type="text/javascript" src="http://www.openstreetmap.org/openlayers/OpenStreetMap.js"></script>
         <script	type="text/javascript" src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=${google.maps.key}'></script>
-        <script type="text/javascript" src="http://people.iola.dk/olau/flot/jquery.js"></script>
         <script type="text/javascript" src="http://people.iola.dk/olau/flot/jquery.flot.js"></script>
         <script type="text/javascript">
             var map, popup, polygonLayer, markers;
@@ -69,35 +70,14 @@
                 document.form.calc.click();
             }
 
-            function getURL(bounds) {
-                var res = this.map.getResolution();
-                var x = Math.round ((bounds.left - this.maxExtent.left) / (res * this.tileSize.w));
-                var y = Math.round ((this.maxExtent.top - bounds.top) / (res * this.tileSize.h));
-                var z = this.map.getZoom();
-
-                var path = z + "/row" + y + "/" + z + "_" + x + "-" + y + ".jpg";
-                var url = this.url;
-                if (url instanceof Array) {
-                    url = this.selectUrl(path, url);
-                }
-                return url + path;
-            }
-
             function foundLocation(position) {
-                var lonLat = new OpenLayers.LonLat(position.coords.longitude, position.coords.latitude).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
                 var zoomLevel = 14;
-
                 if (position.coords.accuracy > 500) {
                     zoomLevel = 11;
                 }
-                map.setCenter(lonLat, zoomLevel);
+                center(position.coords.longitude, position.coords.latitude, zoomLevel);
             }
             
-            function noLocation() {
-                var lonLat = new OpenLayers.LonLat(8.413013, 49.035257).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-                map.setCenter(lonLat, 15);
-            }
-
             function init() {
                 var mapOptions = {
                     maxResolution: 156543.03390625,
@@ -131,64 +111,15 @@
                 click.activate();
 
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
+                    navigator.geolocation.getCurrentPosition(foundLocation, center(8.413013, 49.035257, 15));
                 } else {
-                    noLocation();
+                    center(8.413013, 49.035257, 15);
                 }
             }
 
-            function JSONscriptRequest(fullUrl) {
-                this.fullUrl = fullUrl;
-                this.noCacheIE = '&noCacheIE=' + (new Date()).getTime();
-                this.headLoc = document.getElementsByTagName("head").item(0);
-                this.scriptId = 'YJscriptId' + JSONscriptRequest.scriptCounter++;
-            }
-
-            JSONscriptRequest.scriptCounter = 1;
-
-            JSONscriptRequest.prototype.buildScriptTag = function () {
-                this.scriptObj = document.createElement("script");
-
-                this.scriptObj.setAttribute("type", "text/javascript");
-                this.scriptObj.setAttribute("src", this.fullUrl + this.noCacheIE);
-                this.scriptObj.setAttribute("id", this.scriptId);
-            }
-
-            JSONscriptRequest.prototype.removeScriptTag = function () {
-                this.headLoc.removeChild(this.scriptObj);
-            }
-
-            JSONscriptRequest.prototype.addScriptTag = function () {
-                this.headLoc.appendChild(this.scriptObj);
-            }
-
-            function search_focus(ob) {
-                ob.value="";
-            }
-            function center(lng, lat) {
+            function center(lng, lat, zoom) {
                 var lonLat = new OpenLayers.LonLat(lng, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
-                map.setCenter(lonLat, 15);
-            }
-
-            function getLocation(jData) {
-                if (jData == null) {
-                    return;
-                }
-
-                var html = '';
-                var geonames = jData.geonames;
-                for (i=0;i< geonames.length;i++) {
-                    var name = geonames[i];
-                    html = html + '<a href="javascript:center('+name.lng+','+name.lat+');">' + name.name + '</a><br>';
-                }
-                document.getElementById('resultDiv').innerHTML = html;
-            }
-
-            function search(ob) {
-                request = 'http://ws.geonames.org/searchJSON?q=' +  encodeURIComponent(ob.value)  + '&maxRows=10&style=SHORT&lang=de&country=DE&callback=getLocation';
-                aObj = new JSONscriptRequest(request);
-                aObj.buildScriptTag();
-                aObj.addScriptTag();
+                map.setCenter(lonLat, zoom);
             }
         </script>
     </head>
@@ -197,8 +128,8 @@
             <h1>Running routes</h1>
             <p>This is a demo of running routes, a web application which enables the calculation of running routes for Germany. In order to calculate a route you just need to click in the map for the starting point, enter the distance and press Calculate. <i>This demo version doesn't allow distances equal or longer than 20km.</i> - For further information visit <a href="http://sourceforge.net/projects/running-routes/">http://sourceforge.net/projects/running-routes/</a>.</p>
             <div class="search">
-                <input id="search" onfocus="search_focus(this)" onchange="search(this)" value="Search ..."/>
-                <div id="resultDiv"/>
+                <input id="search" value="Search ..."/>
+                <div id="searchResult"/>
             </div>
         </div>
         <div>
