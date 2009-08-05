@@ -58,9 +58,15 @@
                     }
                     popup = new OpenLayers.Popup("Input", map.getLonLatFromViewPortPx(e.xy), new OpenLayers.Size(180,70));
                     popup.setOpacity(.8);
-                    popup.setContentHTML("<form name=\"popup_form\">Distance: <input name=\"popup_distance\" style=\"text-align:right;\" type=\"text\"  size=\"2\" maxlength=\"2\" value=\"10\" />km<br><input type=\"button\" onclick=\"calculate();\" value=\"Calculate\"/></form>");
+                    popup.setContentHTML("<form name=\"popup_form\">Distance: <input id=\"popup_distance\" style=\"text-align:right;\" type=\"text\"  size=\"2\" maxlength=\"2\" value=\"10\" />km<br><input type=\"button\" onclick=\"calculate();\" value=\"Calculate\"/></form>");
                     map.addPopup(popup);
                     document.popup_form.popup_distance.select();
+                    $("#popup_distance").bind("keypress", function(e){
+                        if (e.keyCode == 13) {
+                            calculate();
+                            return false;
+                        }
+                    });
                 }
             });
 
