@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
@@ -32,7 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import com.exxeta.routing.algorithm.BoxRouting;
+import com.exxeta.routing.algorithm.DanielRouting;
 import com.exxeta.routing.algorithm.RoutingAlgorithm;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -40,17 +41,12 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
-import org.apache.log4j.Logger;
 
 /**
  * 
- *
- * Possible test data:
- * Test "Schuh's Restaurant", Büchig, 1km
- *          latitude = 49.04772;
- *          longitude = 8.47037;
- *          distance = 1000;
- *
+ * 
+ * Possible test data: Test "Schuh's Restaurant", Büchig, 1km latitude = 49.04772; longitude = 8.47037; distance = 1000;
+ * 
  * @author Daniel Weisser
  */
 public class Calculator {
@@ -63,7 +59,6 @@ public class Calculator {
     private static Logger logger = Logger.getLogger(Calculator.class.getName());
     private double startRadius = 50.0;
     private static GeometryFactory fac = new GeometryFactory();
-
 
     static {
         try {
@@ -82,9 +77,12 @@ public class Calculator {
     /**
      * Calculates the route.
      *
-     * @param latitude Longitude of the selected starting point
-     * @param longitude Latitude of the selected starting point
-     * @param distance Distance in meters
+     * @param latitude
+     *            Longitude of the selected starting point
+     * @param longitude
+     *            Latitude of the selected starting point
+     * @param distance
+     *            Distance in meters
      * @return The list of points defining the route
      */
     public RoutingResult calculate(double latitude, double longitude, double distance) {
@@ -152,7 +150,8 @@ public class Calculator {
         return null;
     }
 
-    private FeatureCollection<SimpleFeatureType, SimpleFeature> getRoutableFeatures(DataStore data, double latitude, double longitude, double distance) throws IOException {
+    private FeatureCollection<SimpleFeatureType, SimpleFeature> getRoutableFeatures(DataStore data, double latitude, double longitude, double distance)
+            throws IOException {
         FeatureSource<SimpleFeatureType, SimpleFeature> source = data.getFeatureSource("planet_osm_line"); // "planet_osm_roads"
         try {
             FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
@@ -179,9 +178,12 @@ public class Calculator {
     /**
      * Calculates a boundig box.
      *
-     * @param latitude Longitude of the selected starting point
-     * @param longitude Latitude of the selected starting point
-     * @param distance Distance in meters
+     * @param latitude
+     *            Longitude of the selected starting point
+     * @param longitude
+     *            Latitude of the selected starting point
+     * @param distance
+     *            Distance in meters
      * @return Bounding box for the given parameters
      */
     private ReferencedEnvelope getBoundingBox(double latitude, double longitude, double distance) {
@@ -204,10 +206,15 @@ public class Calculator {
     }
 
     /**
-     * Calculates the start point in the routable features. For a given point the shortest distance to a feature in the set of features is calculated.
-     * @param data data store
-     * @param latitude Longitude of the selected starting point
-     * @param longitude Latitude of the selected starting point
+     * Calculates the start point in the routable features. For a given point
+     * the shortest distance to a feature in the set of features is calculated.
+     *
+     * @param data
+     *            data store
+     * @param latitude
+     *            Longitude of the selected starting point
+     * @param longitude
+     *            Latitude of the selected starting point
      * @return start point
      * @throws java.io.IOException
      */
@@ -284,21 +291,39 @@ public class Calculator {
             }
         }
 
-        // RoutingAlgorithm algorithm = new RandomHalfwayRouting();
-        RoutingAlgorithm algorithm = new BoxRouting();
+        RoutingAlgorithm algorithm = new DanielRouting();
         double calculatedDistance = algorithm.doRouting(startNode, g, collection, distance - startDistance);
 
         collection.add(clickPoint);
         result.setDistance(calculatedDistance + startDistance);
         result.setRoute(collection);
 
-        // calculate markers
+        // calculate kilometer markers
         result.setMarkers(getKilometerMarkers(collection));
 
         return result;
     }
 
     private List<Point> getKilometerMarkers(List<Point> collection) {
-        return collection;
+        List<Point> kilometerList = new ArrayList<Point>();
+
+        double nextMeter = 1000;
+        double distance = 0;
+        Point lastPoint = null;
+        for (Point p : collection) {
+            if (lastPoint != null) {
+                distance += p.distance(lastPoint);
+                if (distance > nextMeter) {
+                    double lengthToWalk = nextMeter - (distance - p.distance(lastPoint));
+                    double percentToWalk = lengthToWalk / p.distance(lastPoint);
+                    double x = lastPoint.getX() + (p.getX() - lastPoint.getX()) * percentToWalk;
+                    double y = lastPoint.getY() + (p.getY() - lastPoint.getY()) * percentToWalk;
+                    kilometerList.add(fac.createPoint(new Coordinate(x, y)));
+                    nextMeter += 1000;
+                }
+            }
+            lastPoint = p;
+        }
+        return kilometerList;
     }
 }
