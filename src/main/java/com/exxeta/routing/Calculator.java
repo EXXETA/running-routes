@@ -103,7 +103,7 @@ public class Calculator {
                 logger.info("No starting point found.");
                 return result;
             }
-            if (distance > 19000) {
+            if (distance > 39000) {
                 RoutingResult result = new RoutingResult();
                 List<Point> startPointList = new ArrayList<Point>();
                 startPointList.add(clickPoint);

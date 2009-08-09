@@ -3,11 +3,11 @@ var heights;
 function printHeightGraph() {
     var runs = (kilometers.length + 1)/20;
     heights = new Array();
+    var tStart = startPoint.transform(map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
+    getHeight(tStart, 0);
+    getHeight(tStart, distance);
     for (i=0;i<runs;i++)
     {
-        var tStart = startPoint.transform(map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
-        getHeight(tStart, 0);
-        getHeight(tStart, distance);
         for (j=0;j<20;j++) {
             if (i*20 + j < kilometers.length) {
                 var tKilometer = kilometers[i*20 + j].transform(map.getProjectionObject(), new OpenLayers.Projection("EPSG:4326"));
