@@ -4,12 +4,13 @@
         <link href="index.css" type="text/css" rel="stylesheet">
         <script type="text/javascript" src="js/jquery-1.3.2.min.js"></script>
         <script type="text/javascript" src="js/search.js"></script>
+        <script type="text/javascript" src="js/heights.js"></script>
         <script type="text/javascript" src="http://www.openlayers.org/api/OpenLayers.js"></script>
         <script type="text/javascript" src="http://www.openstreetmap.org/openlayers/OpenStreetMap.js"></script>
         <script	type="text/javascript" src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=${google.maps.key}'></script>
         <script type="text/javascript" src="http://people.iola.dk/olau/flot/jquery.flot.js"></script>
         <script type="text/javascript">
-            var map, popup, polygonLayer, markers;
+            var map, popup, polygonLayer, markers, kilometers, startPoint, distance;
             var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
             style_blue.strokeColor = "blue";
             style_blue.fillColor = style_blue.strokeColor;
@@ -84,7 +85,7 @@
                 center(position.coords.longitude, position.coords.latitude, zoomLevel);
             }
             
-            function init() {
+            $(document).ready(function() {
                 var mapOptions = {
                     maxResolution: 156543.03390625,
                     numZoomLevels: 31,
@@ -121,7 +122,7 @@
                 } else {
                     center(8.413013, 49.035257, 15);
                 }
-            }
+            });
 
             function center(lng, lat, zoom) {
                 var lonLat = new OpenLayers.LonLat(lng, lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
@@ -129,10 +130,10 @@
             }
         </script>
     </head>
-    <body onload="init()">
+    <body>
         <div class="menu">
             <h1>Running routes</h1>
-            <p>This is a demo of running routes, a web application which enables the calculation of running routes for Germany. In order to calculate a route you just need to click in the map for the starting point, enter the distance and press Calculate. <i>This demo version doesn't allow distances equal or longer than 20km.</i> - For further information visit <a href="http://sourceforge.net/projects/running-routes/">http://sourceforge.net/projects/running-routes/</a>.</p>
+            <p>A running route calculator for Germany. In order to calculate a route just click in the map for the starting point, enter the distance and press Calculate. <i>This demo version doesn't allow distances equal or longer than 20km.</i> - For further information visit <a href="http://sourceforge.net/projects/running-routes/">http://sourceforge.net/projects/running-routes/</a>.</p>
             <div class="search">
                 <input id="search" value="Search ..."/>
                 <div id="searchResult"/>
